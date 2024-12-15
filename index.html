@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Falcon Legend</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- タイトル画面 -->
+  <div id="titleScreen">
+    <h1>Falcon Legend</h1>
+    <button id="startButton">スタート</button>
+  </div>
+  <!-- ゲーム画面 -->
+  <canvas id="gameCanvas"></canvas>
+  <!-- Titleボタン -->
+  <div id="restartScreen" style="display: none;">
+    <h1 id="endMessage"></h1>
+    <button id="restartButton">Restart</button>
+    <br>
+    <button id="titleButton">Title</button>
+  </div>
+  <!-- スマホ用ボタン -->
+  <div id="controls">
+    <button id="leftButton" class="controlButton">←</button>
+    <button id="rightButton" class="controlButton">→</button>
+    <button id="jumpButton" class="controlButton">↑</button>
+    <button id="shootButton" class="controlButton">●</button>
+  </div>
+  <script src="script.js" defer></script>
+</body>
+</html>

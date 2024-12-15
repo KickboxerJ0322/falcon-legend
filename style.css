@@ -1,0 +1,142 @@
+body {
+    margin: 0;
+    overflow: hidden; /* スクロールを禁止 */
+    width: 100vw; /* ブラウザ幅に対応 */
+    height: 100vh; /* ブラウザ高さに対応 */
+}
+
+canvas {
+display: none; /* 初期は非表示に設定 */
+background: #87CEEB; /* 空の色 */
+z-index: 1; /* キャンバスはボタンの後ろ */
+}
+
+#titleScreen {
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+height: 100vh;
+background: #87CEEB; /* タイトル画面の背景色 */
+}
+
+#titleScreen h1 {
+font-size: 48px;
+color: white;
+margin-bottom: 20px;
+}
+
+#titleScreen button {
+font-size: 24px;
+padding: 10px 20px;
+background: orange;
+border: none;
+color: white;
+border-radius: 5px;
+cursor: pointer;
+}
+
+#titleScreen button:hover {
+background: darkorange;
+}
+
+#restartScreen {
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+height: 100vh;
+background: rgba(135, 206, 235, 0.8); /* 半透明の青空背景 */
+position: absolute;
+top: 0;
+left: 0;
+width: 100%;
+}
+
+#restartScreen h1 {
+font-size: 48px;
+color: red;
+margin-bottom: 20px;
+}
+
+#restartButton {
+font-size: 24px;
+padding: 10px 20px;
+background: orange;
+border: none;
+color: white;
+border-radius: 5px;
+cursor: pointer;
+}
+
+#restartButton:hover {
+background: darkorange;
+}
+
+#titleButton {
+font-size: 24px;
+padding: 10px 20px;
+background: orange;
+border: none;
+color: white;
+border-radius: 5px;
+cursor: pointer;
+}
+
+#titleButton:hover {
+background: darkorange;
+}
+
+#controls {
+    position: absolute; /* 画面全体に絶対配置 */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* 他の要素には影響を与えない */
+    z-index: 1000;
+}
+
+.controlButton {
+    position: absolute;
+    width: 7%; /* ボタンを画面幅の10%に設定 */
+    height: 7%;
+    background: rgba(0, 0, 0, 0.5); /* ボタンの背景を半透明黒 */
+    color: white; /* テキストの色を白 */
+    font-size: 150%; /* フォントサイズを相対的に大きく */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 50%;
+    pointer-events: auto;
+    z-index: 1000;
+}
+
+#leftButton {
+    bottom: 1%;
+    left: 5%;
+}
+
+#rightButton {
+    bottom: 1%;
+    left: 20%;
+}
+
+#jumpButton {
+    bottom: 1%;
+    right: 20%;
+}
+
+#shootButton {
+    bottom: 1%;
+    right: 5%;
+}
+
+#titleScreen, #restartScreen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw; /* 画面幅に合わせる */
+    height: 100vh; /* 画面高さに合わせる */
+}
