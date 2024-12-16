@@ -183,22 +183,25 @@ startButton.addEventListener('click', () => {
   bgMusic.currentTime = 0;  
   bgMusic.play().catch((err) => console.error('音楽再生エラー:', err));
   resetGame(); // ゲームをリセット
+  gameLoopActive = true; // ゲームループを有効化
+  cancelAnimationFrame(animationFrameId); // 前回のループをキャンセル
   gameLoop();
 });
 
 // Restartボタンのイベントリスナー
 restartButton.addEventListener('click', () => {
+  console.log('リスタート');
   restartScreen.style.display = 'none'; // Restart画面を非表示
-  bgMusic.currentTime = 0;
-  bgMusic.play();
-  player.isAlive = true; // プレイヤーを生存状態に戻す
-  // 死亡した場所から200ポイント後退させて再スタート
+  bgMusic.currentTime = 0; // BGMを先頭に戻す
+  bgMusic.volume = 0.5;    // 音量をリセット
+  bgMusic.play();          // BGMを再生
+  player.isAlive = true;   // プレイヤーを生存状態に戻す
   player.x = Math.max(player.x - 200, 0); // x座標が0未満にならないように調整
-  player.y = groundHeight - player.height; // 地面の上に配置
-  player.velocityX = 0;
-  player.velocityY = 0;
-  player.isOnGround = false; // 地面上でない状態からスタート
-  gameLoop(); // ゲームループ再開
+  player.y = groundHeight - player.height;
+  player.isOnGround = true;
+  cancelAnimationFrame(animationFrameId); // 既存のループをキャンセル
+  gameLoopActive = true; // ゲームループを有効化
+  gameLoop();              // ゲームループを再開
 });
 
 // タイトルボタンのクリックイベント
@@ -209,6 +212,8 @@ titleButton.addEventListener('click', () => {
   bgMusic.pause(); // 音楽を停止
   bgMusic.currentTime = 0; // 音楽を先頭に戻す
   resetGame(); // 全てをリセット
+  gameLoopActive = false;
+  player.speed = 4;
 });
 
 function restartGame() {
@@ -263,7 +268,7 @@ const player = {
   color: 'red',
   velocityX: 0,
   velocityY: 0,
-  speed: 3,
+  speed: 4,
   gravity: 0.1,
   jumpStrength: -8,
   isAlive: true,
@@ -562,44 +567,47 @@ function drawGoal() {
 
 // ファイアボールの移動処理
 function moveFireballs() {
-  fireballs.forEach((fireball, index) => {
+  fireballs.forEach((fireball, fireballIndex) => {
     fireball.x += fireball.speed;
 
     // 画面外に出たファイアボールを削除
     if (fireball.x > cameraX + canvas.width || fireball.x < cameraX) {
-      fireballs.splice(index, 1);
+      fireballs.splice(fireballIndex, 1);
       return;
     }
 
     // 地上の敵に当たった場合
-    enemies.forEach(enemy => {
+    for (let enemy of enemies) {
       if (enemy.alive && checkCollision(fireball, enemy)) {
         enemy.alive = false; // 敵を倒す
-        fireballs.splice(index, 1); // ファイアボールを削除
+        fireballs.splice(fireballIndex, 1); // ファイアボールを削除
         player.score += 20; // スコア加算
         breakSound.play(); // 敵を倒した効果音を再生
+        return; // 次の処理に進む
       }
-    });
+    }
 
     // 飛ぶ敵に当たった場合
-    flyingEnemies.forEach(enemy => {
+    for (let enemy of flyingEnemies) {
       if (enemy.alive && checkCollision(fireball, enemy)) {
         enemy.alive = false; // 飛ぶ敵を倒す
-        fireballs.splice(index, 1); // ファイアボールを削除
+        fireballs.splice(fireballIndex, 1); // ファイアボールを削除
         player.score += 30; // スコア加算
         breakSound.play();
+        return; // 次の処理に進む
       }
-    });
+    }
 
     // ボスに当たった場合
     if (boss.alive && checkCollision(fireball, boss)) {
       boss.health -= 1; // ボスの体力を減らす
-      fireballs.splice(index, 1); // ファイアボールを削除
+      fireballs.splice(fireballIndex, 1); // ファイアボールを削除
       if (boss.health <= 0) {
         boss.alive = false; // ボスを倒す
         player.score += 100;
         breakSound.play();
       }
+      return; // 次の処理に進む
     }
   });
 }
@@ -826,22 +834,31 @@ restartButton.addEventListener('click', () => {
   player.velocityX = 0;
   player.velocityY = 0;
   player.isOnGround = false; // 地面上でない状態からスタート
+  gameLoopActive = true; // ゲームループを有効化
   gameLoop(); // ゲームループ再開
 });
+
+// 重力の定数を定義
+const GRAVITY = 0.1; // 一貫性のある重力値
 
 // ゲームリセット関数
 function resetGame() {
   // プレイヤーの初期化
   player.x = 50;
-  player.y = groundHeight - player.height;
+  player.y = groundHeight - 30;
+  player.width = 50;
+  player.height = 50;
+  player.color = 'red';
   player.velocityX = 0;
   player.velocityY = 0;
+  player.speed = 4;
+  player.gravity = GRAVITY; // 統一した重力値を適用
+  player.jumpStrength = -8;
   player.isAlive = true;
-  player.isOnGround = true;
+  player.isOnGround = false;
+  player.canShoot = false; // ファイアボール発射可能か
+  player.direction = 'right'; // 向き: 'right' または 'left'
   player.score = 0;
-  player.canShoot = false;
-  player.direction = 'right';
-  player.speed = 4; // 初期速度を設定
 
   // 敵の初期化
   enemies.forEach(enemy => {
@@ -876,7 +893,12 @@ function resetGame() {
   // 背景音楽の音量をリセット
   bgMusic.currentTime = 0; // 音楽を最初に戻す
   bgMusic.volume = 0.5;
+
+  console.log('ゲームリセット完了');
 }
+
+let gameLoopActive = false; // ゲームループの実行状態を管理
+let animationFrameId; // ループIDを管理する変数
 
 // プレイヤーの動作処理にファイアボール発射を追加
 function gameLoop() {
@@ -885,6 +907,7 @@ function gameLoop() {
     endMessage.textContent = 'Game Over!'; // 終了メッセージを設定
     restartScreen.style.display = 'flex'; // Restart画面を表示
     fadeOutBackgroundMusic(); // 背景音楽をフェードアウト
+    gameLoopActive = false; // ゲームループを停止
     return;
   }
 
@@ -893,6 +916,7 @@ function gameLoop() {
     endMessage.textContent = 'You Win!'; // 勝利メッセージを設定
     restartScreen.style.display = 'flex'; // Restart画面を表示
     fadeOutBackgroundMusic(); // 背景音楽をフェードアウト
+    gameLoopActive = false; // ゲームループを停止
     return;
   }
 
@@ -916,8 +940,6 @@ function gameLoop() {
   player.velocityY += player.gravity;
   player.y += player.velocityY;
   player.isOnGround = false;
-
-
 
   // 地面で停止
   if (player.y + player.height > groundHeight) {
@@ -965,7 +987,16 @@ function gameLoop() {
   ctx.fillStyle = 'black';
   ctx.fillText('Score: ' + player.score, 10, 20);
 
-  requestAnimationFrame(gameLoop);
+  if (gameLoopActive) {
+    animationFrameId = requestAnimationFrame(gameLoop); // IDを保存
+  }
+}
+
+function startGame() {
+  if (!gameLoopActive) { // すでにゲームループが実行中でない場合のみ開始
+    gameLoopActive = true;
+    gameLoop();
+  }
 }
 
 // キーボード入力でジャンプと移動
